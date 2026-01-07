@@ -150,8 +150,14 @@
   <!-- STEP 3 -->
   <div class="qb-step" id="variableStep" style="display:none;">
     <h3>Customize your estimate</h3>
-    <label>Number of pages or platforms</label>
+    <label id="quantityLabel">Number of pages or platforms</label>
     <input type="number" id="quantityInput" class="qb-input" value="1" min="1">
+  </div>
+
+  <!-- STEP 4: Add-Ons for Social -->
+  <div class="qb-step" id="addonsStep" style="display:none;">
+    <h3>Add-Ons</h3>
+    <div class="qb-options" id="addonOptions"></div>
   </div>
 
   <!-- SUMMARY -->
@@ -167,12 +173,22 @@
   let service = null;
   let basePrice = 0;
   let packageDetails = {};
+  let selectedAddons = [];
 
   function selectService(type) {
     service = type;
     document.getElementById('packageStep').style.display = 'block';
     document.getElementById('variableStep').style.display = 'none';
+    document.getElementById('addonsStep').style.display = 'none';
     document.getElementById('summary').style.display = 'none';
+    selectedAddons = [];
+
+    const quantityLabel = document.getElementById('quantityLabel');
+    quantityLabel.innerText =
+      type === 'landing' ? 'Number of landing pages' :
+      type === 'website' ? 'Number of pages' :
+      type === 'social' ? 'Number of platforms' :
+      'Quantity';
 
     const options = document.getElementById('packageOptions');
     options.innerHTML = '';
@@ -189,38 +205,9 @@
 
     if (type === 'website') {
       packages = [
-        {
-          name: 'Basic Website',
-          price: 2500,
-          desc: [
-            'Up to 5 pages',
-            'No CRM, no integrations',
-            'Monthly hosting fees: $40/month'
-          ],
-          popular: false
-        },
-        {
-          name: 'Intermediate Website',
-          price: 5000,
-          desc: [
-            'Lead-focused site',
-            'CRM integration, automations',
-            'E-commerce and conversion strategy',
-            'Monthly hosting fees: $40/month'
-          ],
-          popular: true
-        },
-        {
-          name: 'Advanced Website',
-          price: 9000,
-          desc: [
-            'Scalable site',
-            'Advanced integrations & automations',
-            'Advanced SEO and e-commerce',
-            'Monthly hosting fees: $40/month'
-          ],
-          popular: false
-        }
+        { name: 'Basic Website', price: 2500, desc: ['Up to 5 pages', 'No CRM, no integrations', 'Monthly hosting fees: $40/month'], popular: false },
+        { name: 'Intermediate Website', price: 5000, desc: ['Lead-focused site', 'CRM integration, automations', 'E-commerce and conversion strategy', 'Monthly hosting fees: $40/month'], popular: true },
+        { name: 'Advanced Website', price: 9000, desc: ['Scalable site', 'Advanced integrations & automations', 'Advanced SEO and e-commerce', 'Monthly hosting fees: $40/month'], popular: false }
       ];
     }
 
@@ -234,15 +221,7 @@
 
     if (type === 'landing') {
       packages = [
-        {
-          name: 'Landing Page',
-          price: 300,
-          desc: [
-            'Simple Canva-built digital HQ',
-            'Free hosting included'
-          ],
-          popular: true
-        }
+        { name: 'Landing Page', price: 300, desc: ['Simple Canva-built digital HQ', 'Free hosting included'], popular: true }
       ];
     }
 
@@ -250,13 +229,11 @@
       const card = document.createElement('div');
       card.className = 'qb-card';
       card.onclick = () => selectPackage(pkg);
-
       card.innerHTML = `
         ${pkg.popular ? '<div class="qb-badge">Most Popular</div>' : ''}
         <h4>${pkg.name} — $${pkg.price.toLocaleString()}</h4>
         <p>${pkg.desc.join(', ')}</p>
       `;
-
       options.appendChild(card);
     });
   }
@@ -266,6 +243,44 @@
     packageDetails = pkg;
     document.getElementById('variableStep').style.display = 'block';
     document.getElementById('summary').style.display = 'block';
+
+    // Show Add-ons only for social
+    if (service === 'social') {
+      document.getElementById('addonsStep').style.display = 'block';
+      showAddons();
+    } else {
+      document.getElementById('addonsStep').style.display = 'none';
+      selectedAddons = [];
+    }
+
+    calculate();
+  }
+
+  function showAddons() {
+    const addonDiv = document.getElementById('addonOptions');
+    addonDiv.innerHTML = '';
+
+    const addons = [
+      { name: 'Professional Photo & Videography', options: [{ name: 'Basic', price: 500 }, { name: 'Advanced', price: 1200 }] },
+      { name: 'Paid Ads Management', options: [{ name: 'Monthly Management', price: 500, note: 'Ad spend investment to be identified based on goals' }] },
+      { name: 'Google Business Portal Setup/Optimization', options: [{ name: 'Setup', price: 200 }] }
+    ];
+
+    addons.forEach(addon => {
+      addon.options.forEach(opt => {
+        const card = document.createElement('div');
+        card.className = 'qb-card';
+        card.onclick = () => toggleAddon(opt);
+        card.innerHTML = `<h4>${addon.name} - $${opt.price}${opt.note ? ' (' + opt.note + ')' : ''}</h4>`;
+        addonDiv.appendChild(card);
+      });
+    });
+  }
+
+  function toggleAddon(opt) {
+    const idx = selectedAddons.indexOf(opt);
+    if (idx === -1) selectedAddons.push(opt);
+    else selectedAddons.splice(idx, 1);
     calculate();
   }
 
@@ -274,13 +289,13 @@
     let total = basePrice * qty;
     let breakdownHTML = '';
 
-    // Base price section
+    // Base package
     breakdownHTML += '<div class="qb-breakdown-section">';
     breakdownHTML += `<h4>Base Package x ${qty}</h4><ul><li>$${(basePrice*qty).toLocaleString()}</li></ul></div>`;
 
-    // Hosting section
+    // Hosting for websites
     if (service === 'website') {
-      total += 40; // fixed hosting fee per month
+      total += 40;
       breakdownHTML += '<div class="qb-breakdown-section">';
       breakdownHTML += `<h4>Hosting</h4><ul><li>$40/month</li></ul></div>`;
     }
@@ -300,13 +315,23 @@
       breakdownHTML += `<h4>Extra Platforms</h4><ul><li>$${extra}/month</li></ul></div>`;
     }
 
-    // Landing pages: each is $300, hosting free
+    // Landing pages: no extra charges beyond base
     if (service === 'landing') {
       breakdownHTML += '<div class="qb-breakdown-section">';
       breakdownHTML += `<h4>Landing Pages x ${qty}</h4><ul><li>$${(basePrice*qty).toLocaleString()} (Hosting Free)</li></ul></div>`;
     }
 
-    // Included features section
+    // Add-ons for social
+    if (selectedAddons.length > 0) {
+      breakdownHTML += '<div class="qb-breakdown-section"><h4>Add-Ons</h4><ul>';
+      selectedAddons.forEach(a => {
+        breakdownHTML += `<li>${a.name} - $${a.price}${a.note ? ' (' + a.note + ')' : ''}</li>`;
+        total += a.price;
+      });
+      breakdownHTML += '</ul></div>';
+    }
+
+    // Included features
     if (packageDetails.desc && packageDetails.desc.length > 0) {
       breakdownHTML += '<div class="qb-breakdown-section">';
       breakdownHTML += '<h4>Included Features</h4><ul>';
