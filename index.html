@@ -134,6 +134,10 @@
         <h4>Operations & Systems</h4>
         <p>Audits, systems, SOPs, and process optimization.</p>
       </div>
+      <div class="qb-card" onclick="selectService('landing')">
+        <h4>Landing Page</h4>
+        <p>Simple, Canva-built digital HQ. Hosting included for free.</p>
+      </div>
     </div>
   </div>
 
@@ -147,7 +151,7 @@
   <div class="qb-step" id="variableStep" style="display:none;">
     <h3>Customize your estimate</h3>
     <label>Number of pages or platforms</label>
-    <input type="number" id="quantityInput" class="qb-input" value="5" min="1">
+    <input type="number" id="quantityInput" class="qb-input" value="1" min="1">
   </div>
 
   <!-- SUMMARY -->
@@ -228,6 +232,20 @@
       ];
     }
 
+    if (type === 'landing') {
+      packages = [
+        {
+          name: 'Landing Page',
+          price: 300,
+          desc: [
+            'Simple Canva-built digital HQ',
+            'Free hosting included'
+          ],
+          popular: true
+        }
+      ];
+    }
+
     packages.forEach(pkg => {
       const card = document.createElement('div');
       card.className = 'qb-card';
@@ -253,16 +271,16 @@
 
   function calculate() {
     const qty = parseInt(document.getElementById('quantityInput').value || 0);
-    let total = basePrice;
+    let total = basePrice * qty;
     let breakdownHTML = '';
 
     // Base price section
     breakdownHTML += '<div class="qb-breakdown-section">';
-    breakdownHTML += `<h4>Base Package</h4><ul><li>$${basePrice.toLocaleString()}</li></ul></div>`;
+    breakdownHTML += `<h4>Base Package x ${qty}</h4><ul><li>$${(basePrice*qty).toLocaleString()}</li></ul></div>`;
 
     // Hosting section
     if (service === 'website') {
-      total += 40;
+      total += 40; // fixed hosting fee per month
       breakdownHTML += '<div class="qb-breakdown-section">';
       breakdownHTML += `<h4>Hosting</h4><ul><li>$40/month</li></ul></div>`;
     }
@@ -280,6 +298,12 @@
       total += extra;
       breakdownHTML += '<div class="qb-breakdown-section">';
       breakdownHTML += `<h4>Extra Platforms</h4><ul><li>$${extra}/month</li></ul></div>`;
+    }
+
+    // Landing pages: each is $300, hosting free
+    if (service === 'landing') {
+      breakdownHTML += '<div class="qb-breakdown-section">';
+      breakdownHTML += `<h4>Landing Pages x ${qty}</h4><ul><li>$${(basePrice*qty).toLocaleString()} (Hosting Free)</li></ul></div>`;
     }
 
     // Included features section
