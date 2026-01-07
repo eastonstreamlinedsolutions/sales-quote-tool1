@@ -22,10 +22,17 @@
     background: #fff;
     cursor: pointer;
     position: relative;
+    transition: border 0.2s, box-shadow 0.2s, transform 0.05s;
   }
 
   .qb-card:hover {
-    border-color: #000;
+    border-color: #16c800; /* green hover */
+  }
+
+  /* Selected state */
+  .qb-card.selected {
+    border-color: #16c800;
+    box-shadow: 0 6px 20px rgba(22,200,0,0.2);
   }
 
   .qb-card h4 {
@@ -42,7 +49,7 @@
     position: absolute;
     top: -10px;
     right: -10px;
-    background: #000;
+    background: #16c800; /* green badge */
     color: #fff;
     font-size: 12px;
     padding: 6px 10px;
@@ -54,6 +61,14 @@
     padding: 12px;
     font-size: 16px;
     margin-top: 8px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+
+  .qb-input:focus {
+    border-color: #16c800;
+    outline: none;
+    box-shadow: 0 0 4px rgba(22,200,0,0.4);
   }
 
   .qb-summary {
@@ -68,11 +83,20 @@
     padding: 14px;
     border-radius: 8px;
     border: none;
-    background: #000;
+    background: #16c800; /* green CTA */
     color: #fff;
     font-size: 16px;
     width: 100%;
     cursor: pointer;
+    transition: background 0.2s, transform 0.05s;
+  }
+
+  button.cta:hover {
+    background: #13b300;
+  }
+
+  button.cta:active {
+    transform: scale(0.98);
   }
 
   @media (max-width: 600px) {
