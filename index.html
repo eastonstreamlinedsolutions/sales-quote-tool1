@@ -1,0 +1,256 @@
+<style>
+  .quote-builder {
+    max-width: 900px;
+    margin: auto;
+    padding: 24px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  }
+
+  .qb-step {
+    margin-bottom: 36px;
+  }
+
+  .qb-options {
+    display: grid;
+    gap: 16px;
+  }
+
+  .qb-card {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 16px;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .qb-card:hover {
+    border-color: #000;
+  }
+
+  .qb-card h4 {
+    margin: 0 0 6px 0;
+  }
+
+  .qb-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+  }
+
+  .qb-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #000;
+    color: #fff;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
+
+  .qb-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin-top: 8px;
+  }
+
+  .qb-summary {
+    padding: 20px;
+    border-radius: 12px;
+    background: #f8f8f8;
+    font-size: 18px;
+  }
+
+  button.cta {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    background: #000;
+    color: #fff;
+    font-size: 16px;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  @media (max-width: 600px) {
+    .quote-builder {
+      padding: 16px;
+    }
+  }
+</style>
+
+<div class="quote-builder">
+
+  <!-- STEP 1 -->
+  <div class="qb-step">
+    <h3>What service are you interested in?</h3>
+    <div class="qb-options">
+      <div class="qb-card" onclick="selectService('social')">
+        <h4>Social Media Marketing</h4>
+        <p>Monthly content, engagement, and brand growth.</p>
+      </div>
+      <div class="qb-card" onclick="selectService('website')">
+        <h4>Website Design & Development</h4>
+        <p>Custom SEO-optimized Squarespace or WordPress websites.</p>
+      </div>
+      <div class="qb-card" onclick="selectService('operations')">
+        <h4>Operations & Systems</h4>
+        <p>Audits, systems, SOPs, and process optimization.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="qb-step" id="packageStep" style="display:none;">
+    <h3>Select a package</h3>
+    <div class="qb-options" id="packageOptions"></div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="qb-step" id="variableStep" style="display:none;">
+    <h3>Customize your estimate</h3>
+    <label>Number of pages or platforms</label>
+    <input type="number" id="quantityInput" class="qb-input" value="5" min="1">
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="qb-step qb-summary" id="summary" style="display:none;">
+    <strong>Estimated Investment:</strong>
+    <div id="priceOutput" style="margin-top:6px;"></div>
+    <p style="margin-top:12px;font-size:14px;">
+      This is an estimate. Final pricing is confirmed after a quick review.
+    </p>
+    <button class="cta">Request Final Quote</button>
+  </div>
+
+</div>
+
+<script>
+  let service = null;
+  let basePrice = 0;
+
+  function selectService(type) {
+    service = type;
+    document.getElementById('packageStep').style.display = 'block';
+    document.getElementById('variableStep').style.display = 'none';
+    document.getElementById('summary').style.display = 'none';
+
+    const options = document.getElementById('packageOptions');
+    options.innerHTML = '';
+
+    let packages = [];
+
+    if (type === 'social') {
+      packages = [
+        {
+          name: 'Foundation',
+          price: 750,
+          desc: 'Best for small businesses just getting started. Consistent posting and brand presence.',
+          popular: false
+        },
+        {
+          name: 'Growth',
+          price: 1500,
+          desc: 'Designed for growing brands focused on engagement, reach, and consistency.',
+          popular: true
+        },
+        {
+          name: 'Scale',
+          price: 3000,
+          desc: 'High-volume content, video, and strategy built to drive real growth.',
+          popular: false
+        }
+      ];
+    }
+
+    if (type === 'website') {
+      packages = [
+        {
+          name: 'Basic Website',
+          price: 2500,
+          desc: 'Up to 5 pages. No CRM, no integrations. Best for simple online presence and basic e-commerce.',
+          popular: false
+        },
+        {
+          name: 'Intermediate Website',
+          price: 5000,
+          desc: 'Lead-focused site with CRM integration, automations, e-commerce and conversion strategy.',
+          popular: true
+        },
+        {
+          name: 'Advanced Website',
+          price: 9000,
+          desc: 'Scalable site with advanced integrations, advanced automations, advanced SEO and e-commerce.',
+          popular: false
+        }
+      ];
+    }
+
+    if (type === 'operations') {
+      packages = [
+        {
+          name: 'Systems Audit',
+          price: 2500,
+          desc: 'Full operational review with a clear roadmap to efficiency.',
+          popular: false
+        },
+        {
+          name: 'System Design & Implementation',
+          price: 5000,
+          desc: 'We build and implement the systems your business needs to scale.',
+          popular: true
+        },
+        {
+          name: 'SOP Development',
+          price: 2000,
+          desc: 'Clear documentation so your team runs without bottlenecks.',
+          popular: false
+        }
+      ];
+    }
+
+    packages.forEach(pkg => {
+      const card = document.createElement('div');
+      card.className = 'qb-card';
+      card.onclick = () => selectPackage(pkg.price);
+
+      card.innerHTML = `
+        ${pkg.popular ? '<div class="qb-badge">Most Popular</div>' : ''}
+        <h4>${pkg.name} — Starting at $${pkg.price.toLocaleString()}</h4>
+        <p>${pkg.desc}</p>
+      `;
+
+      options.appendChild(card);
+    });
+  }
+
+  function selectPackage(price) {
+    basePrice = price;
+    document.getElementById('variableStep').style.display = 'block';
+    document.getElementById('summary').style.display = 'block';
+    calculate();
+  }
+
+  function calculate() {
+    const qty = parseInt(document.getElementById('quantityInput').value || 0);
+    let total = basePrice;
+
+    if (service === 'website' && qty > 5) {
+      total += (qty - 5) * 200;
+    }
+
+    if (service === 'social' && qty > 1) {
+      total += (qty - 1) * 300;
+    }
+
+    document.getElementById('priceOutput').innerText =
+      service === 'social'
+        ? `$${total.toLocaleString()} / month`
+        : `$${total.toLocaleString()} one-time`;
+  }
+
+  document.getElementById('quantityInput').addEventListener('input', calculate);
+</script>
